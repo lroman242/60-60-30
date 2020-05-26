@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/faiface/beep"
-	"github.com/gen2brain/beeep"
 	"github.com/faiface/beep/mp3"
 	"github.com/faiface/beep/speaker"
+	"github.com/gen2brain/beeep"
 	"log"
 	"os"
 	"os/signal"
@@ -19,7 +19,7 @@ const WORK_DURATION_MIN = 25
 const SHORT_BREAK_DURATION_MIN = 5
 const FINAL_BREAK_DURATION = 30
 
-func main()  {
+func main() {
 	f, err := os.Open("assets/beep.mp3")
 	if err != nil {
 		log.Fatal(err)
@@ -31,9 +31,6 @@ func main()  {
 	}
 	defer streamer.Close()
 	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
-
-
-
 
 	ctx := context.Background()
 	ctxWithCancel, cancelFunction := context.WithCancel(ctx)
@@ -90,11 +87,12 @@ func main()  {
 	log.Printf("Got signal: %v, exiting.", s)
 }
 
-func startCycle(ctx context.Context, streamer beep.StreamSeekCloser)  {
+func startCycle(ctx context.Context, streamer beep.StreamSeekCloser) {
 	finalState := NUM_OF_WORK_PERIODS * 2
 
-	for state:= 1; state <= finalState; state++ {
-		speaker.Play(beep.Seq(streamer, beep.Callback(func() { })))
+	for state := 1; state <= finalState; state++ {
+		streamer.Seek(0)
+		speaker.Play(beep.Seq(streamer, beep.Callback(func() {})))
 
 		if state == finalState {
 			err := beeep.Alert("60-60-30 ЦИКЛЫ", "Отдохни 30мин", "assets/warning.png")
@@ -111,7 +109,7 @@ func startCycle(ctx context.Context, streamer beep.StreamSeekCloser)  {
 				// do nothing
 				//fmt.Printf("Final state %v finished\n", state)
 			}
-		} else if state % 2 == 0 { // short break period
+		} else if state%2 == 0 { // short break period
 			err := beeep.Alert("60-60-30 ЦИКЛЫ", "Отдохни 5мин", "assets/warning.png")
 			if err != nil {
 				panic(err)
