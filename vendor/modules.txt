@@ -6,6 +6,24 @@ github.com/faiface/beep/speaker
 # github.com/gen2brain/beeep v0.0.0-20200420150314-13046a26d502
 ## explicit
 github.com/gen2brain/beeep
+# github.com/getlantern/context v0.0.0-20190109183933-c447772a6520
+github.com/getlantern/context
+# github.com/getlantern/errors v0.0.0-20190325191628-abdb3e3e36f7
+github.com/getlantern/errors
+# github.com/getlantern/golog v0.0.0-20190830074920-4ef2e798c2d7
+github.com/getlantern/golog
+# github.com/getlantern/hex v0.0.0-20190417191902-c6586a6fe0b7
+github.com/getlantern/hex
+# github.com/getlantern/hidden v0.0.0-20190325191715-f02dbb02be55
+github.com/getlantern/hidden
+# github.com/getlantern/ops v0.0.0-20190325191751-d70cb0d6f85f
+github.com/getlantern/ops
+# github.com/getlantern/systray v1.0.2
+## explicit
+github.com/getlantern/systray
+github.com/getlantern/systray/example/icon
+# github.com/go-stack/stack v1.8.0
+github.com/go-stack/stack
 # github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4
 github.com/go-toast/toast
 # github.com/godbus/dbus v4.1.0+incompatible
@@ -29,6 +47,8 @@ github.com/hajimehoshi/oto
 github.com/hajimehoshi/oto/internal/mux
 # github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
 github.com/nu7hatch/gouuid
+# github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c
+github.com/oxtoacart/bpool
 # github.com/pkg/errors v0.8.1
 github.com/pkg/errors
 # github.com/tadvi/systray v0.0.0-20190226123456-11a2b8fa57af
@@ -56,6 +76,6 @@ golang.org/x/mobile/event/touch
 golang.org/x/mobile/geom
 golang.org/x/mobile/gl
 golang.org/x/mobile/internal/mobileinit
-# golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527
+# golang.org/x/sys v0.0.0-20200515095857-1151b9dac4a9
 golang.org/x/sys/windows
 golang.org/x/sys/windows/registry
