@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	//"github.com/faiface/beep"
-	//"github.com/faiface/beep/mp3"
-	//"github.com/faiface/beep/speaker"
+	"github.com/faiface/beep"
+	"github.com/faiface/beep/mp3"
+	"github.com/faiface/beep/speaker"
 	"github.com/gen2brain/beeep"
 	"github.com/getlantern/systray"
+	"log"
+	"os"
 	"time"
 )
 
@@ -16,24 +18,24 @@ const WORK_DURATION_MIN = 25
 const SHORT_BREAK_DURATION_MIN = 5
 const FINAL_BREAK_DURATION = 30
 
-//var audioStream beep.StreamSeekCloser
+var audioStream beep.StreamSeekCloser
 var isAudioEnabled bool = false
 var isAutoRestartEnabled bool = false
 
 func main() {
-	//f, err := os.Open("assets/beep.mp3")
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//
-	//audioStream, format, err := mp3.Decode(f)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//fmt.Println(audioStream)
-	//defer audioStream.Close()
-	//speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
+	f, err := os.Open("assets/beep.mp3")
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	stream, format, err := mp3.Decode(f)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	audioStream = stream
+	defer audioStream.Close()
+	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
 
 	systray.Run(onReady, func() {
 		fmt.Println("onExitHandler")
@@ -45,10 +47,9 @@ func startCycle(ctx context.Context) {
 	finalState := NUM_OF_WORK_PERIODS * 2
 
 	for state := 1; state <= finalState; state++ {
-		fmt.Println(state)
-		//playBeep()
+		playBeep()
 		if state == finalState {
-			err := beeep.Alert("60-60-30 ЦИКЛЫ", "Отдохни 30мин", "assets/warning.png")
+			err := beeep.Alert("60-60-30 Working cycles", "Take a rest for 30 minutes", "assets/warning.png")
 			if err != nil {
 				panic(err)
 			}
@@ -58,12 +59,15 @@ func startCycle(ctx context.Context) {
 			case <-ctx.Done():
 				// stop func execution
 				return
-			case <-time.After(FINAL_BREAK_DURATION * time.Second):
-				// do nothing
-				//TODO: auto restart option + 3 x playBeep
+			case <-time.After(FINAL_BREAK_DURATION * time.Minute):
+				playWarning()
+
+				if isAutoRestartEnabled {
+					state = 0
+				}
 			}
 		} else if state%2 == 0 { // short break period
-			err := beeep.Alert("60-60-30 ЦИКЛЫ", "Отдохни 5мин", "assets/warning.png")
+			err := beeep.Alert("60-60-30 Working cycles", "Take a short rest. 5 minutes and get back to work!", "assets/warning.png")
 			if err != nil {
 				panic(err)
 			}
@@ -73,11 +77,11 @@ func startCycle(ctx context.Context) {
 			case <-ctx.Done():
 				// stop func execution
 				return
-			case <-time.After(SHORT_BREAK_DURATION_MIN * time.Second):
+			case <-time.After(SHORT_BREAK_DURATION_MIN * time.Minute):
 				// do nothing. go to next period
 			}
 		} else { // work period
-			err := beeep.Alert("60-60-30 ЦИКЛЫ", "Начался рабочий цикл в 25мин", "assets/warning.png")
+			err := beeep.Alert("60-60-30 Working cycles", "New working period begun. Focus on your work for 25 minutes", "assets/warning.png")
 			if err != nil {
 				panic(err)
 			}
@@ -87,19 +91,26 @@ func startCycle(ctx context.Context) {
 			case <-ctx.Done():
 				// stop func execution
 				return
-			case <-time.After(WORK_DURATION_MIN * time.Second):
+			case <-time.After(WORK_DURATION_MIN * time.Minute):
 				// do nothing. go to next period
 			}
 		}
 	}
 }
 
-//func playBeep() {
-//	fmt.Println(audioStream)
-//
-//	audioStream.Seek(0)
-//	speaker.Play(beep.Seq(audioStream, beep.Callback(func() {})))
-//}
+func playBeep() {
+	if isAudioEnabled {
+		audioStream.Seek(0)
+		speaker.Play(audioStream)
+	}
+}
+
+func playWarning() {
+	if isAudioEnabled {
+		audioStream.Seek(0)
+		speaker.Play(beep.Loop(3, audioStream))
+	}
+}
 
 func onReady() {
 	ctx := context.Background()
@@ -107,7 +118,7 @@ func onReady() {
 
 	systray.SetTemplateIcon(Icon, Icon)
 	systray.SetIcon(Icon)
-	systray.SetTooltip("60-60-30 work cycle")
+	systray.SetTooltip("60-60-30 Working cycles")
 
 	btnStart := systray.AddMenuItem("Start", "Start Cycle")
 	btnStop := systray.AddMenuItem("Stop", "Stop Current Cycle")
@@ -172,6 +183,11 @@ func onReady() {
 				// previous context has already been canceled, so new
 				// context required to have ability to start new working cycle
 				ctxWithCancel, cancelFunc = context.WithCancel(ctx)
+
+				err := beeep.Alert("60-60-30 Working cycles", "Cycle stopped", "assets/warning.png")
+				if err != nil {
+					panic(err)
+				}
 			case <-btnRestart.ClickedCh:
 				//Stop existed
 				cancelFunc()
